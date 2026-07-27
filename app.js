@@ -28,6 +28,8 @@ if (
 
 // ---- DOM references ----------------------------------------------------
 
+const appRoot = document.querySelector(".app");
+
 const el = {
   list: document.getElementById("transaction-list"),
   emptyState: document.getElementById("empty-state"),
@@ -209,7 +211,24 @@ function buildCard(t) {
 // Модальне вікно: додати / редагувати
 // ==========================================================================
 
+// Тільки одне модальне вікно може бути відкритим одночасно. Це забезпечено
+// двома незалежними механізмами:
+// 1) явна перевірка стану на початку кожної open-функції (працює завжди,
+//    незалежно від браузера);
+// 2) `inert` + CSS-клас на .app, що блокує клік і клавіатуру на фоні,
+//    поки відкрите будь-яке вікно (додатковий захист).
+function isAnyModalOpen() {
+  return !el.modalOverlay.hidden || !el.confirmOverlay.hidden;
+}
+
+function updateBackgroundLock() {
+  const locked = isAnyModalOpen();
+  appRoot.inert = locked;
+  appRoot.classList.toggle("is-locked", locked);
+}
+
 function openAddModal() {
+  if (isAnyModalOpen()) return;
   el.modalTitle.textContent = "Нова транзакція";
   el.transactionIdInput.value = "";
   el.amountInput.value = "";
@@ -217,10 +236,12 @@ function openAddModal() {
   setSelectedPayer(null);
   clearFieldErrors();
   el.modalOverlay.hidden = false;
+  updateBackgroundLock();
   window.setTimeout(() => el.amountInput.focus(), 50);
 }
 
 function openEditModal(t) {
+  if (isAnyModalOpen()) return;
   el.modalTitle.textContent = "Редагувати транзакцію";
   el.transactionIdInput.value = t.id;
   el.amountInput.value = Number(t.amount);
@@ -228,10 +249,12 @@ function openEditModal(t) {
   setSelectedPayer(t.payer);
   clearFieldErrors();
   el.modalOverlay.hidden = false;
+  updateBackgroundLock();
 }
 
 function closeModal() {
   el.modalOverlay.hidden = true;
+  updateBackgroundLock();
 }
 
 function setSelectedPayer(payer) {
@@ -312,13 +335,16 @@ async function handleFormSubmit(event) {
 // ==========================================================================
 
 function openDeleteConfirm(id) {
+  if (!el.modalOverlay.hidden) return;
   pendingDeleteId = id;
   el.confirmOverlay.hidden = false;
+  updateBackgroundLock();
 }
 
 function closeDeleteConfirm() {
   pendingDeleteId = null;
   el.confirmOverlay.hidden = true;
+  updateBackgroundLock();
 }
 
 async function handleConfirmDelete() {

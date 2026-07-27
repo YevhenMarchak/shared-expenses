@@ -3,30 +3,31 @@
    ========================================================================== */
 
 :root {
-  /* Base palette */
-  --color-bg: #f4f6f3;
+  /* Base palette — soft violet-tinted light theme */
+  --color-bg: #f6f4fc;
   --color-surface: #ffffff;
-  --color-surface-alt: #fbfaf8;
-  --color-border: #e5e8e2;
+  --color-surface-alt: #f8f6fd;
+  --color-border: #e6e1f5;
 
-  --color-text: #1d2a24;
-  --color-text-muted: #77877e;
-  --color-text-faint: #a4b0a8;
+  --color-text: #241d38;
+  --color-text-muted: #7c7391;
+  --color-text-faint: #a99fc2;
 
   /* Person colors — used consistently for avatars, chips and card accents */
-  --color-misha: #2f6f5e;
-  --color-misha-soft: #e3f0ec;
-  --color-zhenya: #d9436b;
-  --color-zhenya-soft: #fbe6ec;
+  --color-misha: #1f8a70;
+  --color-misha-soft: #e1f5ef;
+  --color-zhenya: #e14f82;
+  --color-zhenya-soft: #fdeaf1;
 
-  /* Primary action color — deliberately distinct from both person colors */
-  --color-primary: #5b4b8a;
-  --color-primary-hover: #4a3c73;
-  --color-primary-soft: #ede9f5;
+  /* Primary action color — vivid violet, the app's signature hue */
+  --color-primary: #7c3aed;
+  --color-primary-hover: #6b28d9;
+  --color-primary-soft: #efe6fd;
+  --color-primary-light: #a78bfa;
 
-  --color-danger: #c1443b;
+  --color-danger: #d1453f;
   --color-danger-soft: #fbeae8;
-  --color-danger-hover: #a3372f;
+  --color-danger-hover: #b3352f;
 
   /* Typography */
   --font-display: "Manrope", system-ui, -apple-system, "Segoe UI", sans-serif;
@@ -51,6 +52,16 @@
   box-sizing: border-box;
 }
 
+/* КОРінь бага з "двома вікнами одночасно": деякі елементи нижче (зокрема
+   .modal-overlay) задають власний display (flex), а authored CSS-правило
+   завжди переважає стандартне браузерне [hidden]{display:none} з тією ж
+   специфічністю — тобто атрибут hidden фактично ігнорувався незалежно від
+   того, що виставляв JS. Це правило гарантує, що [hidden] завжди ховає
+   елемент, яким би не був display в інших класах. */
+[hidden] {
+  display: none !important;
+}
+
 html,
 body {
   margin: 0;
@@ -58,9 +69,12 @@ body {
 }
 
 body {
-  background: var(--color-bg);
-  background-image: radial-gradient(circle at 15% 0%, rgba(91, 75, 138, 0.06), transparent 45%),
-    radial-gradient(circle at 85% 15%, rgba(47, 111, 94, 0.06), transparent 40%);
+  background: linear-gradient(165deg, #efe8fc 0%, #e2d3f9 30%, #ecdff5 60%, #f3edfb 100%);
+  background-image: linear-gradient(165deg, #efe8fc 0%, #e2d3f9 30%, #ecdff5 60%, #f3edfb 100%),
+    radial-gradient(circle at 8% 0%, rgba(124, 58, 237, 0.28), transparent 45%),
+    radial-gradient(circle at 95% 10%, rgba(225, 79, 130, 0.16), transparent 42%),
+    radial-gradient(circle at 100% 70%, rgba(31, 138, 112, 0.12), transparent 45%);
+  background-attachment: fixed;
   color: var(--color-text);
   font-family: var(--font-body);
   -webkit-font-smoothing: antialiased;
@@ -85,6 +99,13 @@ button {
   max-width: var(--content-width);
   margin: 0 auto;
   padding: 28px 18px 100px;
+  position: relative;
+}
+
+/* Резервний захист від кліків по фону, поки відкрите модальне вікно —
+   працює навіть у браузерах без підтримки атрибута `inert`. */
+.app.is-locked {
+  pointer-events: none;
 }
 
 .app-header {
@@ -92,10 +113,27 @@ button {
   margin-bottom: 22px;
 }
 
+.app-badge {
+  width: 52px;
+  height: 52px;
+  margin: 0 auto 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  border-radius: 16px;
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
+  box-shadow: 0 10px 24px rgba(124, 58, 237, 0.28);
+}
+
 .app-header h1 {
-  font-size: 1.7rem;
+  font-size: 1.8rem;
   font-weight: 800;
   letter-spacing: -0.01em;
+  background: linear-gradient(100deg, var(--color-text) 40%, var(--color-primary) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .app-subtitle {
@@ -119,49 +157,68 @@ button {
 .summary-card {
   background: var(--color-surface);
   border-radius: var(--radius-md);
-  padding: 14px 10px;
+  padding: 15px 10px;
   text-align: center;
   box-shadow: var(--shadow-sm);
   border: 1px solid var(--color-border);
   display: flex;
   flex-direction: column;
   gap: 4px;
+  transition: transform 0.15s ease;
+}
+
+.summary-card:hover {
+  transform: translateY(-2px);
 }
 
 .summary-label {
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: var(--color-text-muted);
+  font-size: 0.72rem;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.04em;
 }
 
 .summary-value {
   font-family: var(--font-display);
   font-weight: 800;
-  font-size: 1.05rem;
+  font-size: 1.08rem;
   font-variant-numeric: tabular-nums;
 }
 
 .summary-misha {
-  border-top: 3px solid var(--color-misha);
+  background: var(--color-misha-soft);
+  border-color: transparent;
+}
+.summary-misha .summary-label {
+  color: var(--color-misha);
+  opacity: 0.75;
 }
 .summary-misha .summary-value {
   color: var(--color-misha);
 }
 
 .summary-zhenya {
-  border-top: 3px solid var(--color-zhenya);
+  background: var(--color-zhenya-soft);
+  border-color: transparent;
+}
+.summary-zhenya .summary-label {
+  color: var(--color-zhenya);
+  opacity: 0.75;
 }
 .summary-zhenya .summary-value {
   color: var(--color-zhenya);
 }
 
 .summary-total {
-  border-top: 3px solid var(--color-primary);
+  background: linear-gradient(160deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
+  border-color: transparent;
+  box-shadow: 0 10px 24px rgba(124, 58, 237, 0.24);
+}
+.summary-total .summary-label {
+  color: rgba(255, 255, 255, 0.8);
 }
 .summary-total .summary-value {
-  color: var(--color-primary);
+  color: #ffffff;
 }
 
 /* ==========================================================================
@@ -178,20 +235,20 @@ button {
   margin-bottom: 24px;
   border: none;
   border-radius: var(--radius-pill);
-  background: var(--color-primary);
+  background: linear-gradient(135deg, var(--color-primary) 0%, #9d5cf5 100%);
   color: #fff;
   font-size: 1rem;
   font-weight: 700;
   font-family: var(--font-display);
   cursor: pointer;
-  box-shadow: var(--shadow-md);
-  transition: transform 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+  box-shadow: 0 12px 28px rgba(124, 58, 237, 0.32);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
 }
 
 .btn-add:hover {
-  background: var(--color-primary-hover);
+  filter: brightness(1.06);
   transform: translateY(-1px);
-  box-shadow: var(--shadow-lg);
+  box-shadow: 0 16px 34px rgba(124, 58, 237, 0.4);
 }
 
 .btn-add:active {
@@ -234,9 +291,22 @@ button {
 .transaction-card.payer-misha {
   border-left-color: var(--color-misha);
 }
+.transaction-card.payer-misha:hover {
+  box-shadow: 0 8px 20px rgba(31, 138, 112, 0.14);
+}
 
 .transaction-card.payer-zhenya {
   border-left-color: var(--color-zhenya);
+}
+.transaction-card.payer-zhenya:hover {
+  box-shadow: 0 8px 20px rgba(225, 79, 130, 0.14);
+}
+
+.transaction-card {
+  transition: box-shadow 0.15s ease, transform 0.15s ease;
+}
+.transaction-card:hover {
+  transform: translateY(-1px);
 }
 
 @keyframes card-in {
@@ -565,12 +635,13 @@ button {
 }
 
 .btn-primary {
-  background: var(--color-primary);
+  background: linear-gradient(135deg, var(--color-primary) 0%, #9d5cf5 100%);
   color: #fff;
+  box-shadow: 0 8px 20px rgba(124, 58, 237, 0.28);
 }
 
 .btn-primary:hover {
-  background: var(--color-primary-hover);
+  filter: brightness(1.06);
 }
 
 .btn-primary:disabled {
