@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Спільні витрати — Міша &amp; Женя</title>
+  <meta name="description" content="Спільний список витрат для двох людей" />
+
+  <!-- Шрифти: Manrope для заголовків/цифр, Inter для тексту. Є системний fallback, тож додаток працює і офлайн. -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Manrope:wght@500;700;800&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <div class="app">
+
+    <!-- Заголовок -->
+    <header class="app-header">
+      <h1>Спільні витрати</h1>
+      <p class="app-subtitle">Міша &amp; Женя</p>
+    </header>
+
+    <!-- Підсумок -->
+    <section class="summary" aria-label="Підсумок витрат">
+      <div class="summary-card summary-misha">
+        <span class="summary-label">Міша</span>
+        <span class="summary-value" id="sum-misha">0.00 zł</span>
+      </div>
+      <div class="summary-card summary-zhenya">
+        <span class="summary-label">Женя</span>
+        <span class="summary-value" id="sum-zhenya">0.00 zł</span>
+      </div>
+      <div class="summary-card summary-total">
+        <span class="summary-label">Разом</span>
+        <span class="summary-value" id="sum-total">0.00 zł</span>
+      </div>
+    </section>
+
+    <!-- Кнопка додавання -->
+    <button type="button" class="btn-add" id="open-add-btn">
+      <span class="btn-add-icon" aria-hidden="true">+</span>
+      Додати
+    </button>
+
+    <!-- Список транзакцій -->
+    <main>
+      <div id="status-message" class="status-message" hidden></div>
+
+      <ul class="transaction-list" id="transaction-list" aria-live="polite">
+        <!-- Картки транзакцій рендеряться тут через app.js -->
+      </ul>
+
+      <div class="empty-state" id="empty-state" hidden>
+        <p>Поки немає жодної транзакції.</p>
+        <p>Натисніть «+ Додати», щоб внести першу покупку.</p>
+      </div>
+    </main>
+
+  </div>
+
+  <!-- Модальне вікно: додати / редагувати транзакцію -->
+  <div class="modal-overlay" id="modal-overlay" hidden>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <div class="modal-handle" aria-hidden="true"></div>
+
+      <div class="modal-header">
+        <h2 id="modal-title">Нова транзакція</h2>
+        <button type="button" class="btn-close" id="close-modal-btn" aria-label="Закрити">✕</button>
+      </div>
+
+      <form id="transaction-form" novalidate>
+        <input type="hidden" id="transaction-id" value="" />
+
+        <div class="form-group">
+          <label class="form-label">Хто заплатив</label>
+          <div class="payer-toggle" role="radiogroup" aria-label="Хто заплатив">
+            <button type="button" class="payer-option payer-option-misha" data-payer="Міша" role="radio" aria-checked="false">
+              👤 Міша
+            </button>
+            <button type="button" class="payer-option payer-option-zhenya" data-payer="Женя" role="radio" aria-checked="false">
+              👤 Женя
+            </button>
+          </div>
+          <p class="field-error" id="payer-error" hidden>Оберіть, хто заплатив</p>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="amount-input">Сума</label>
+          <div class="amount-field">
+            <input
+              type="number"
+              id="amount-input"
+              inputmode="decimal"
+              step="0.01"
+              min="0.01"
+              placeholder="0.00"
+              autocomplete="off"
+            />
+            <span class="amount-suffix">zł</span>
+          </div>
+          <p class="field-error" id="amount-error" hidden>Введіть суму більше нуля</p>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="description-input">Опис <span class="optional-tag">необов'язково</span></label>
+          <input
+            type="text"
+            id="description-input"
+            placeholder="Наприклад: Продукти"
+            autocomplete="off"
+            maxlength="200"
+          />
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary" id="cancel-btn">Скасувати</button>
+          <button type="submit" class="btn-primary" id="save-btn">Зберегти</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Модальне вікно підтвердження видалення -->
+  <div class="modal-overlay" id="confirm-overlay" hidden>
+    <div class="modal modal-small" role="dialog" aria-modal="true" aria-labelledby="confirm-title">
+      <h2 id="confirm-title">Видалити транзакцію?</h2>
+      <p class="confirm-text">Цю дію не можна скасувати.</p>
+      <div class="modal-actions">
+        <button type="button" class="btn-secondary" id="cancel-delete-btn">Скасувати</button>
+        <button type="button" class="btn-danger" id="confirm-delete-btn">Видалити</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Supabase SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
